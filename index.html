@@ -265,6 +265,28 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:28px;backgrou
 .auth-card .input{height:38px}
 .chip.cloud{background:var(--success-soft);color:var(--success)}.chip.cloud.off{background:var(--surface-3);color:var(--muted)}.chip.cloud.err{background:var(--danger-soft);color:var(--danger)}
 
+/* date picker */
+.input.date{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.dp{position:absolute;z-index:60;width:286px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px;animation:pop .14s ease;user-select:none}
+.dp-h{display:flex;align-items:center;gap:4px;margin-bottom:6px}
+.dp-h .btn{height:30px}
+.dp-title{flex:1;text-align:center;font-weight:700;font-size:13px}
+.dp-title select{border:0;background:transparent;font:inherit;font-weight:700;cursor:pointer;padding:2px 2px;border-radius:6px;color:var(--text)}
+.dp-title select:hover{background:var(--surface-3)}
+.dp-title select:focus{outline:none;box-shadow:0 0 0 3px var(--primary-ring)}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-dow{text-align:center;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 0 6px}
+.dp-dow.we{color:var(--danger)}
+.dp-d{height:34px;border:0;background:transparent;border-radius:8px;font:inherit;font-size:13px;font-variant-numeric:tabular-nums;cursor:pointer;color:var(--text)}
+.dp-d:hover{background:var(--primary-soft)}
+.dp-d.out{color:var(--muted-2)}
+.dp-d.we{color:var(--danger)}.dp-d.we.out{color:#FCA5A5}
+.dp-d.today{box-shadow:inset 0 0 0 1.5px var(--primary);font-weight:700}
+.dp-d.sel{background:var(--primary);color:#fff;font-weight:700}
+.dp-d.sel:hover{background:var(--primary-h)}
+.dp-f{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.dp-f .spacer{flex:1}
+
 /* toast */
 .toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:200}
 .toast{display:flex;align-items:center;gap:10px;background:#0F172A;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:var(--shadow-lg);font-weight:500;font-size:12.5px;animation:pop .16s ease;max-width:380px}
@@ -472,7 +494,7 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:28px;backgrou
               </div>
               <div class="field">
                 <label for="f-date">Ngày lập</label>
-                <input id="f-date" class="input" type="date" data-path="meta.date">
+                <div class="inline-input"><input id="f-date" class="input date" data-path="meta.date" data-type="date" placeholder="dd/mm/yyyy" inputmode="numeric" autocomplete="off" maxlength="10"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-dp="f-date" title="Chọn ngày" tabindex="-1"><svg class="ic ic-sm"><use href="#i-calendar"/></svg></button></div>
               </div>
               <div class="field">
                 <label for="f-payment">Hình thức thanh toán</label>
@@ -612,6 +634,17 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const clone = o => JSON.parse(JSON.stringify(o));
+const isoToVN = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
+function vnToISO(s) {   // chấp nhận dd/mm/yyyy, d/m/yyyy, dd-mm-yyyy, dd.mm.yyyy, ddmmyyyy, yyyy-mm-dd
+  s = String(s || '').trim(); if (!s) return '';
+  let d, m, y, t;
+  if ((t = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s))) { y = +t[1]; m = +t[2]; d = +t[3]; }
+  else if ((t = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(s))) { d = +t[1]; m = +t[2]; y = +t[3]; }
+  else if ((t = /^(\d{2})(\d{2})(\d{4})$/.exec(s))) { d = +t[1]; m = +t[2]; y = +t[3]; }
+  else return '';
+  if (y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > new Date(y, m, 0).getDate()) return '';
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
 const icon = (n, cls = 'ic') => `<svg class="${cls}"><use href="#i-${n}"/></svg>`;
 
 const LS = {
@@ -1055,7 +1088,7 @@ const getPath = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), 
 const setPath = (o, p, v) => { const ks = p.split('.'); const last = ks.pop(); const t = ks.reduce((a, k) => a[k], o); t[last] = v; };
 
 function fillForm() {
-  $$('[data-path]', $('#editor')).forEach(el => { el.value = getPath(inv, el.dataset.path) ?? ''; });
+  $$('[data-path]', $('#editor')).forEach(el => { const v = getPath(inv, el.dataset.path) ?? ''; el.value = el.dataset.type === 'date' ? isoToVN(v) : v; });
   $('#f-serial').value = settings.serial;
   renderItems();
   updateTaxHint();
@@ -1190,6 +1223,7 @@ editor.addEventListener('input', e => {
   const el = e.target;
   if (el.id === 'f-pick-customer') { showCustomerPicker(el); return; }
   if (el.dataset.path) {
+    if (el.dataset.type === 'date') { const iso = vnToISO(el.value); el.classList.toggle('err', !!el.value.trim() && !iso); if (iso || !el.value.trim()) { setPath(inv, el.dataset.path, iso); onChange(); } return; }
     setPath(inv, el.dataset.path, el.value);
     if (el.dataset.path === 'buyer.taxCode') { updateTaxHint(); const m = findCustomersByTax(el.value); if (m.length === 1 && !inv.buyer.customerCode) { closeAC(); applyCustomer(m[0], { keepTax: true }); } else if (!inv.buyer.customerCode) showCustomerSuggest(el); }
     if (el.dataset.path === 'meta.contractCode') updateTopbar();
@@ -1221,6 +1255,7 @@ editor.addEventListener('focusout', e => {
     if (it) { const v = it[el.dataset.field]; el.value = v ? fmtNum(v) : (el.dataset.field === 'qty' ? fmtNum(v) : ''); }
   }
   if (el.id === 'f-pick-customer') setTimeout(updateCustomerPick, 120);
+  if (el.dataset && el.dataset.type === 'date') { const iso = vnToISO(el.value); if (iso) { el.value = isoToVN(iso); el.classList.remove('err'); } else if (!el.value.trim()) el.classList.remove('err'); }
 });
 editor.addEventListener('click', e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
@@ -1369,6 +1404,57 @@ function applyCustomer(c, opts = {}) {
   $$('[data-path^="buyer."]').forEach(el => el.value = getPath(inv, el.dataset.path) ?? '');
   updateTaxHint(); updateCustomerPick(); onChange(); toast('Đã điền thông tin đối tượng ' + (c.code || ''));
 }
+/* =====================================================================
+   DATE PICKER (lịch chọn ngày tùy biến, thay cho input type=date)
+   ===================================================================== */
+let dpBox = null, dpInput = null, dpSuppress = false;
+const refocus = input => { dpSuppress = true; input.focus(); setTimeout(() => { dpSuppress = false; }, 80); };
+const DP_MONTHS = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+function closeDP() { if (dpBox) dpBox.remove(); dpBox = null; dpInput = null; }
+function openDP(input) {
+  if (dpBox && dpInput === input) { closeDP(); return; }
+  closeDP(); dpInput = input;
+  const sel = vnToISO(input.value) || '';
+  const today = todayISO();
+  let [vy, vm] = (sel || today).split('-').map(Number);
+  dpBox = document.createElement('div'); dpBox.className = 'dp';
+  document.body.appendChild(dpBox);
+  const place = () => { const r = input.getBoundingClientRect(); const below = window.innerHeight - r.bottom > 330; dpBox.style.left = Math.min(r.left, window.innerWidth - 300) + 'px'; if (below) { dpBox.style.top = (r.bottom + 6) + 'px'; dpBox.style.bottom = ''; } else { dpBox.style.bottom = (window.innerHeight - r.top + 6) + 'px'; dpBox.style.top = ''; } };
+  const pick = iso => { input.value = isoToVN(iso); input.dispatchEvent(new Event('input', { bubbles: true })); input.classList.remove('err'); closeDP(); refocus(input); };
+  const render = () => {
+    const first = new Date(vy, vm - 1, 1); const startDow = (first.getDay() + 6) % 7; // T2 = 0
+    const dim = new Date(vy, vm, 0).getDate(), dimPrev = new Date(vy, vm - 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+      let d = i - startDow + 1, y = vy, m = vm, out = false;
+      if (d < 1) { d += dimPrev; m = vm - 1; out = true; if (m < 1) { m = 12; y--; } }
+      else if (d > dim) { d -= dim; m = vm + 1; out = true; if (m > 12) { m = 1; y++; } }
+      const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; const we = i % 7 >= 5;
+      cells.push(`<button type="button" class="dp-d${out ? ' out' : ''}${we ? ' we' : ''}${iso === today ? ' today' : ''}${iso === sel ? ' sel' : ''}" data-iso="${iso}">${d}</button>`);
+    }
+    const years = []; for (let y = vy - 10; y <= vy + 10; y++) years.push(`<option value="${y}"${y === vy ? ' selected' : ''}>${y}</option>`);
+    dpBox.innerHTML = `
+      <div class="dp-h"><button type="button" class="btn btn-ghost btn-icon btn-sm" data-nav="-1" title="Tháng trước"><svg class="ic ic-sm" style="transform:rotate(90deg)"><use href="#i-chevron"/></svg></button>
+        <div class="dp-title"><select data-m>${DP_MONTHS.map((n, i) => `<option value="${i + 1}"${i + 1 === vm ? ' selected' : ''}>${n}</option>`).join('')}</select><select data-y>${years.join('')}</select></div>
+        <button type="button" class="btn btn-ghost btn-icon btn-sm" data-nav="1" title="Tháng sau"><svg class="ic ic-sm" style="transform:rotate(-90deg)"><use href="#i-chevron"/></svg></button></div>
+      <div class="dp-grid">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, i) => `<div class="dp-dow${i >= 5 ? ' we' : ''}">${d}</div>`).join('')}${cells.join('')}</div>
+      <div class="dp-f"><button type="button" class="btn btn-sm btn-soft" data-today>Hôm nay</button><span class="spacer"></span><button type="button" class="btn btn-sm btn-ghost" data-clear>Xóa</button></div>`;
+    $$('[data-nav]', dpBox).forEach(b => b.onclick = () => { vm += +b.dataset.nav; if (vm < 1) { vm = 12; vy--; } if (vm > 12) { vm = 1; vy++; } render(); });
+    $('[data-m]', dpBox).onchange = e => { vm = +e.target.value; render(); };
+    $('[data-y]', dpBox).onchange = e => { vy = +e.target.value; render(); };
+    $('[data-today]', dpBox).onclick = () => pick(today);
+    $('[data-clear]', dpBox).onclick = () => { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); closeDP(); refocus(input); };
+    $$('.dp-d', dpBox).forEach(b => b.onclick = () => pick(b.dataset.iso));
+    place();
+  };
+  render();
+}
+document.addEventListener('mousedown', e => { if (dpBox && !dpBox.contains(e.target) && e.target !== dpInput && !e.target.closest('[data-dp]')) closeDP(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && dpBox) { e.stopPropagation(); closeDP(); } }, true);
+document.addEventListener('scroll', e => { if (dpBox && !(e.target instanceof Node && dpBox.contains(e.target))) closeDP(); }, true);
+document.addEventListener('click', e => { const b = e.target.closest('[data-dp]'); if (b) { const inp = document.getElementById(b.dataset.dp); if (inp) openDP(inp); } });
+document.addEventListener('focusin', e => { if (!dpSuppress && e.target.classList && e.target.classList.contains('date') && !(dpBox && dpInput === e.target)) openDP(e.target); });
+
 /* =====================================================================
    MODALS / TOASTS
    ===================================================================== */
