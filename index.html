@@ -265,6 +265,25 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:28px;backgrou
 .auth-card .input{height:38px}
 .chip.cloud{background:var(--success-soft);color:var(--success)}.chip.cloud.off{background:var(--surface-3);color:var(--muted)}.chip.cloud.err{background:var(--danger-soft);color:var(--danger)}
 
+/* custom select (thay dropdown mặc định của trình duyệt) */
+.sel{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;cursor:pointer;background:var(--surface);color:var(--text);font-weight:400}
+.sel:hover{border-color:#B6C2D1;background:var(--surface)}
+.sel:disabled{opacity:.6;cursor:not-allowed;background:var(--surface-3)}
+.sel .sel-v{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel .sel-c{color:var(--muted);transition:transform .15s;flex-shrink:0}
+.sel[aria-expanded="true"]{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring)}
+.sel[aria-expanded="true"] .sel-c{transform:rotate(180deg)}
+.sel-native{display:none!important}
+.sel-menu{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);padding:5px;max-height:280px;overflow:auto;animation:pop .12s ease;min-width:150px}
+.sel-o{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:13px;white-space:nowrap;color:var(--text)}
+.sel-o.act{background:var(--primary-soft)}
+.sel-o.on{font-weight:600;color:var(--primary)}
+.sel-o.dis{opacity:.45;cursor:not-allowed}
+.sel-o .ic{color:var(--primary);width:16px;height:16px}
+.dp-title .sel{height:28px;padding:0 6px;border:0;background:transparent;font-weight:700;width:auto;box-shadow:none;gap:2px}
+.dp-title .sel:hover{background:var(--surface-3)}
+.dp-title .sel[aria-expanded="true"]{background:var(--surface-3);box-shadow:none}
+
 /* date picker */
 .input.date{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .dp{position:absolute;z-index:60;width:286px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px;animation:pop .14s ease;user-select:none}
@@ -1145,7 +1164,7 @@ function itemHTML(it, idx) {
     <div class="item-main">
       <div class="f c3"><label>Mã hàng</label><input class="input code" data-item="${it.id}" data-field="code" value="${esc(it.code || '')}" placeholder="Mã" autocomplete="off" spellcheck="false"></div>
       <div class="f c7"><label>Tên hàng hóa, dịch vụ</label><input class="input" data-item="${it.id}" data-field="name" value="${esc(it.name)}" placeholder="Gõ tên hoặc mã để chọn từ danh mục…" autocomplete="off"></div>
-      <div class="f c2"><label>ĐVT</label><input class="input" data-item="${it.id}" data-field="unit" value="${esc(it.unit)}" list="units" placeholder="Cái" autocomplete="off"></div>
+      <div class="f c2"><label>ĐVT</label><input class="input" data-item="${it.id}" data-field="unit" value="${esc(it.unit)}" data-unit="1" placeholder="Cái" autocomplete="off"></div>
       <div class="f c2"><label>Số lượng</label><input class="input num" data-item="${it.id}" data-field="qty" value="${fmtNum(it.qty)}" inputmode="decimal"></div>
       <div class="f c3"><label>Đơn giá</label><input class="input num" data-item="${it.id}" data-field="unitGross" value="${it.unitGross ? fmtNum(it.unitGross) : ''}" placeholder="0" inputmode="decimal" title="Đơn giá đã gồm thuế cho 1 đơn vị — tổng tiền = đơn giá × SL"></div>
       <div class="f c3 has-tag"><label><span>Tổng tiền</span>${auto ? '<span class="tag">tự tính</span>' : ''}</label><input class="input num${auto ? ' is-auto' : ''}" data-item="${it.id}" data-field="gross" value="${it.gross ? fmtNum(it.gross) : ''}" placeholder="0" inputmode="decimal" title="Đang tự tính = đơn giá × SL; gõ vào để tự nhập"></div>
@@ -1405,6 +1424,72 @@ function applyCustomer(c, opts = {}) {
   updateTaxHint(); updateCustomerPick(); onChange(); toast('Đã điền thông tin đối tượng ' + (c.code || ''));
 }
 /* =====================================================================
+   CUSTOM SELECT — mọi <select> đều được thay bằng dropdown tùy biến (tự áp dụng cho select mới thêm)
+   ===================================================================== */
+let selMenu = null, selOpen = null;
+function closeSelMenu() { if (selMenu) selMenu.remove(); selMenu = null; if (selOpen) selOpen.trigger.setAttribute('aria-expanded', 'false'); selOpen = null; }
+const selLabel = sel => { const o = sel.options[sel.selectedIndex]; return o ? o.textContent : ''; };
+function enhanceSelect(sel) {
+  if (sel.dataset.enh) return; sel.dataset.enh = '1';
+  const t = document.createElement('button'); t.type = 'button'; t.className = 'sel ' + sel.className; t.style.cssText = sel.style.cssText; t.disabled = sel.disabled; t.setAttribute('aria-haspopup', 'listbox'); t.setAttribute('aria-expanded', 'false');
+  if (sel.title) t.title = sel.title;
+  t.innerHTML = `<span class="sel-v"></span>${icon('chevron', 'ic ic-sm sel-c')}`;
+  sel.insertAdjacentElement('afterend', t); sel.classList.add('sel-native');
+  const refresh = () => { $('.sel-v', t).textContent = selLabel(sel); t.disabled = sel.disabled; };
+  refresh(); t._refresh = refresh;
+  // bắt cả thay đổi bằng code (sel.value = …) để nhãn luôn đúng
+  const dv = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value'), di = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'selectedIndex');
+  Object.defineProperty(sel, 'value', { configurable: true, get() { return dv.get.call(this); }, set(v) { dv.set.call(this, v); refresh(); } });
+  Object.defineProperty(sel, 'selectedIndex', { configurable: true, get() { return di.get.call(this); }, set(v) { di.set.call(this, v); refresh(); } });
+  sel.addEventListener('change', refresh);
+  t.addEventListener('click', () => openSelMenu(sel, t));
+  t.addEventListener('keydown', e => { if (['ArrowDown', 'ArrowUp', ' ', 'Enter'].includes(e.key) && !selOpen) { e.preventDefault(); openSelMenu(sel, t); } });
+}
+function openSelMenu(sel, t) {
+  if (selOpen && selOpen.sel === sel) { closeSelMenu(); return; }
+  closeSelMenu(); if (typeof closeAC === 'function') closeAC();
+  const opts = Array.from(sel.options);
+  selMenu = document.createElement('div'); selMenu.className = 'sel-menu'; selMenu.setAttribute('role', 'listbox');
+  selMenu.innerHTML = opts.map((o, i) => `<div class="sel-o${o.selected ? ' on' : ''}${o.disabled ? ' dis' : ''}" data-i="${i}" role="option"><span>${esc(o.textContent)}</span>${o.selected ? icon('check', 'ic ic-sm') : ''}</div>`).join('');
+  document.body.appendChild(selMenu);
+  const r = t.getBoundingClientRect();
+  selMenu.style.minWidth = Math.max(r.width, 150) + 'px';
+  selMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - selMenu.offsetWidth - 8)) + 'px';
+  const h = Math.min(selMenu.offsetHeight, 280);
+  if (window.innerHeight - r.bottom > h + 8) { selMenu.style.top = (r.bottom + 4) + 'px'; } else { selMenu.style.bottom = (window.innerHeight - r.top + 4) + 'px'; }
+  let active = Math.max(0, sel.selectedIndex);
+  const setActive = i => { active = i; $$('.sel-o', selMenu).forEach((el, k) => el.classList.toggle('act', k === i)); const a = $('.sel-o.act', selMenu); if (a) a.scrollIntoView({ block: 'nearest' }); };
+  const choose = i => { const o = opts[i]; if (!o || o.disabled) return; if (sel.selectedIndex !== i) { sel.selectedIndex = i; sel.dispatchEvent(new Event('input', { bubbles: true })); sel.dispatchEvent(new Event('change', { bubbles: true })); } closeSelMenu(); t.focus(); };
+  selMenu.addEventListener('mousedown', e => e.preventDefault());
+  selMenu.addEventListener('click', e => { const o = e.target.closest('.sel-o'); if (o) choose(+o.dataset.i); });
+  selMenu.addEventListener('mousemove', e => { const o = e.target.closest('.sel-o'); if (o && +o.dataset.i !== active) setActive(+o.dataset.i); });
+  selOpen = { sel, trigger: t, choose, setActive, get active() { return active; }, count: opts.length };
+  t.setAttribute('aria-expanded', 'true');
+  setActive(active);
+}
+document.addEventListener('keydown', e => {
+  if (!selOpen) return; const s = selOpen;
+  if (e.key === 'ArrowDown') { e.preventDefault(); s.setActive(Math.min(s.count - 1, s.active + 1)); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); s.setActive(Math.max(0, s.active - 1)); }
+  else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.choose(s.active); }
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSelMenu(); }
+  else if (e.key === 'Tab') closeSelMenu();
+}, true);
+document.addEventListener('mousedown', e => { if (selMenu && !selMenu.contains(e.target) && !(selOpen && selOpen.trigger.contains(e.target))) closeSelMenu(); });
+document.addEventListener('scroll', e => { if (selMenu && !selMenu.contains(e.target)) closeSelMenu(); }, true);
+// ĐVT: gợi ý tùy biến thay cho datalist mặc định của trình duyệt
+function showUnitSuggest(input) {
+  const q = input.value.trim().toLowerCase();
+  const list = UNITS.filter(u => !q || u.toLowerCase().includes(q));
+  openAC(input, list, u => `<b>${hi(u, q)}</b>`, u => { input.value = u; input.dispatchEvent(new Event('input', { bubbles: true })); const nx = input.closest('.item') ? $('[data-field="qty"]', input.closest('.item')) : null; if (nx) nx.focus(); });
+}
+document.addEventListener('focusin', e => { if (e.target.matches && e.target.matches('input[data-unit]')) showUnitSuggest(e.target); });
+document.addEventListener('input', e => { if (e.target.matches && e.target.matches('input[data-unit]')) showUnitSuggest(e.target); });
+function enhanceAll() { $$('select.input:not([data-enh]), .dp-title select:not([data-enh])').forEach(enhanceSelect); }
+new MutationObserver(() => enhanceAll()).observe(document.body, { childList: true, subtree: true });
+enhanceAll();
+
+/* =====================================================================
    DATE PICKER (lịch chọn ngày tùy biến, thay cho input type=date)
    ===================================================================== */
 let dpBox = null, dpInput = null, dpSuppress = false;
@@ -1449,9 +1534,9 @@ function openDP(input) {
   };
   render();
 }
-document.addEventListener('mousedown', e => { if (dpBox && !dpBox.contains(e.target) && e.target !== dpInput && !e.target.closest('[data-dp]')) closeDP(); });
+document.addEventListener('mousedown', e => { if (dpBox && !dpBox.contains(e.target) && e.target !== dpInput && !e.target.closest('[data-dp]') && !e.target.closest('.sel-menu')) closeDP(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && dpBox) { e.stopPropagation(); closeDP(); } }, true);
-document.addEventListener('scroll', e => { if (dpBox && !(e.target instanceof Node && dpBox.contains(e.target))) closeDP(); }, true);
+document.addEventListener('scroll', e => { if (dpBox && !(e.target instanceof Node && (dpBox.contains(e.target) || (e.target.closest && e.target.closest('.sel-menu'))))) closeDP(); }, true);
 document.addEventListener('click', e => { const b = e.target.closest('[data-dp]'); if (b) { const inp = document.getElementById(b.dataset.dp); if (inp) openDP(inp); } });
 document.addEventListener('focusin', e => { if (!dpSuppress && e.target.classList && e.target.classList.contains('date') && !(dpBox && dpInput === e.target)) openDP(e.target); });
 
@@ -1661,7 +1746,7 @@ function openCatalog() {
     const list = catalog.filter(c => !q || norm(c.code).includes(norm(q)) || c.name.toLowerCase().includes(k));
     m.body.innerHTML = `
       <div class="form-panel"><h4>${editing ? 'Sửa mặt hàng' : 'Thêm mặt hàng mới'}</h4>
-        <div class="grid-3" style="grid-template-columns:130px 2fr 1fr 1fr"><div class="field"><label>Mã hàng <span class="req">*</span></label><input class="input code" id="c-code" value="${esc(editing?.code || '')}" spellcheck="false"></div><div class="field"><label>Tên hàng hóa, dịch vụ <span class="req">*</span></label><input class="input" id="c-name" value="${esc(editing?.name || '')}"></div><div class="field"><label>ĐVT</label><input class="input" id="c-unit" list="units" value="${esc(editing?.unit || '')}"></div><div class="field"><label>Thuế suất</label><select class="input" id="c-rate">${RATES.map(r => `<option value="${r.v}"${(editing?.rate || '8') === r.v ? ' selected' : ''}>${r.label}</option>`).join('')}</select></div></div>
+        <div class="grid-3" style="grid-template-columns:130px 2fr 1fr 1fr"><div class="field"><label>Mã hàng <span class="req">*</span></label><input class="input code" id="c-code" value="${esc(editing?.code || '')}" spellcheck="false"></div><div class="field"><label>Tên hàng hóa, dịch vụ <span class="req">*</span></label><input class="input" id="c-name" value="${esc(editing?.name || '')}"></div><div class="field"><label>ĐVT</label><input class="input" id="c-unit" data-unit="1" value="${esc(editing?.unit || '')}"></div><div class="field"><label>Thuế suất</label><select class="input" id="c-rate">${RATES.map(r => `<option value="${r.v}"${(editing?.rate || '8') === r.v ? ' selected' : ''}>${r.label}</option>`).join('')}</select></div></div>
         <div class="grid-3" style="margin-top:10px;align-items:end"><div class="field"><label>Đơn giá đã gồm VAT (1 đơn vị)</label><input class="input num" id="c-price" inputmode="decimal" value="${editing?.price ? fmtNum(editing.price) : ''}" placeholder="0"></div><div></div><div style="display:flex;gap:6px;justify-content:flex-end">${editing ? '<button class="btn" id="c-cancel">Hủy</button>' : ''}<button class="btn btn-primary" id="c-save">${icon(editing ? 'check' : 'plus', 'ic ic-sm')}${editing ? 'Cập nhật' : 'Thêm'}</button></div></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><div class="searchbar" style="flex:1;margin:0">${icon('search', 'ic ic-sm')}<input class="input" placeholder="Tìm theo mã hàng, tên…" value="${esc(q)}"></div><span class="chip">${catalog.length} mặt hàng</span><button class="btn" id="c-import">${icon('paste', 'ic ic-sm')}Nhập từ Excel</button></div>
@@ -2149,7 +2234,6 @@ function openUsers() {
 /* =====================================================================
    INIT
    ===================================================================== */
-const dl = document.createElement('datalist'); dl.id = 'units'; dl.innerHTML = UNITS.map(u => `<option value="${u}">`).join(''); document.body.appendChild(dl);
 fillForm(); updateDraftsCount();
 document.fonts && document.fonts.ready ? document.fonts.ready.then(renderPreview) : renderPreview();
 renderPreview();
