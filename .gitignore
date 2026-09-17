@@ -1,0 +1,11 @@
+# Dữ liệu khách hàng thật — không đưa lên GitHub
+*.pdf
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+
+# hệ thống
+Thumbs.db
+.DS_Store
+*.bak
