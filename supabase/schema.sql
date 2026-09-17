@@ -201,10 +201,4 @@ begin
   end if;
 end $$;
 
--- Dữ liệu danh mục mẫu ban đầu (bỏ qua nếu đã có)
-insert into public.products (code, name, unit, rate, price) values
-  ('FABI',    'Phần mềm quản lý bán hàng Fabi', 'Tháng', 'KCT', 0),
-  ('FABI-KT', 'Phí khởi tạo Fabi',              'Lần',   'KCT', 300000),
-  ('ITP76U',  'Máy in nhiệt ITP76U',            'Cái',   '8',   950000),
-  ('IAP250S', 'Máy tính tiền IAP250S',          'Cái',   '8',   5900000)
-on conflict (code) do nothing;
+-- (Danh mục hàng hóa / đối tượng được nhập từ file Excel qua app hoặc CLI, không seed ở đây)

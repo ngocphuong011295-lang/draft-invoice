@@ -4,6 +4,8 @@ Web app 1 file (`index.html`) để lập **hóa đơn GTGT nháp** theo đúng 
 
 ## Cài đặt lần đầu
 
+> Đã cấu hình xong (09/2026): project Supabase `tvlkclsvomatoaqiwhqb` (Singapore), schema đã chạy, 385 hàng hóa + 18.705 đối tượng đã nhập, `index.html` đã có URL + anon key. Phần dưới chỉ cần khi dựng lại từ đầu.
+
 ### 1. Supabase (cơ sở dữ liệu + đăng nhập)
 1. Vào https://supabase.com → **New project** (chọn region Singapore cho nhanh).
 2. Mở **SQL Editor** → dán toàn bộ file [`supabase/schema.sql`](supabase/schema.sql) → **Run**.
