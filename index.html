@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hóa đơn nháp iPOS</title>
 <meta name="description" content="Công cụ lập hóa đơn GTGT nháp theo mẫu M-Invoice của iPOS.vn – chạy offline, xuất PDF qua hộp thoại in.">
+<meta name="theme-color" content="#005DA3">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
 <style>
 /* =====================================================================
    1. DESIGN TOKENS
@@ -124,28 +127,35 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:28px;backgrou
 /* items */
 .items-empty{border:1.5px dashed var(--border-strong);border-radius:var(--radius-sm);padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
 .items-empty .ic{width:28px;height:28px;color:var(--muted-2)}
-.item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 10px 9px 6px;margin-bottom:10px;background:var(--surface);display:grid;grid-template-columns:24px 1fr;gap:6px;position:relative;transition:box-shadow .12s,border-color .12s}
+/* ---- dòng hàng hóa: lưới 12 cột cố định → mọi dòng thẳng hàng, nhãn 1 dòng, không nhảy ---- */
+.item{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr) 30px;gap:0 8px;padding:10px 10px 8px 8px;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);transition:box-shadow .12s,border-color .12s}
 .item:hover{border-color:#B6C2D1}
 .item:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring)}
 .item.dragging{opacity:.35}
 .item.drop-before{box-shadow:0 -3px 0 0 var(--primary)}
 .item.drop-after{box-shadow:0 3px 0 0 var(--primary)}
-.item-side{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:24px}
+.item-side{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:19px}
+.item-idx{font-size:11px;font-weight:700;color:#fff;background:var(--primary);border-radius:7px;min-width:24px;height:22px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
 .item-grip{cursor:grab;color:var(--muted-2);display:flex;padding:2px 0}
 .item-grip:active{cursor:grabbing}
-.item-idx{font-size:11px;font-weight:700;color:var(--text-2);background:var(--surface-3);border-radius:6px;min-width:22px;height:20px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
-.item-main{display:grid;gap:8px;min-width:0}
-.item-r1{display:grid;grid-template-columns:118px 1fr 84px auto;gap:8px;align-items:end}
+.item-main{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px 8px;min-width:0;align-items:end}
+.item-main .f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.item-main .f>label{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.item-main .f .input{height:34px;padding:0 9px}
+.item-main .f.c3{grid-column:span 3}.item-main .f.c2{grid-column:span 2}.item-main .f.c7{grid-column:span 7}
+.item-main .calc{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 0;justify-content:flex-end;align-items:center;font-size:11.5px;color:var(--muted);padding-top:2px;border-top:1px dashed var(--border);margin-top:2px;padding-top:6px}
+.item-main .calc span{padding:0 8px;border-right:1px solid var(--border)}
+.item-main .calc span:last-child{border-right:0;padding-right:0}
+.item-main .calc b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums;margin-left:4px}
+.item-main .calc .warn{color:var(--warn)}
+.item-acts{display:flex;flex-direction:column;gap:2px;padding-top:19px}
+.item-acts .btn{width:30px;height:30px}
 .input.code{font-family:Consolas,"Cascadia Mono","Courier New",monospace;font-size:12.5px;text-transform:uppercase}
-.item-r2{display:grid;grid-template-columns:60px 1fr 1fr 1fr 74px;gap:8px}
-.field-mini .auto{display:inline-block;font-size:9.5px;font-weight:700;color:var(--success);background:var(--success-soft);border-radius:4px;padding:0 5px;line-height:15px;vertical-align:1px;text-transform:uppercase;letter-spacing:.03em}
+.input.num.is-auto{background:#F0FDF4;border-color:#BBF7D0}
+.f.has-tag>label{display:flex;justify-content:space-between;align-items:center;gap:6px;overflow:visible}
+.f.has-tag>label>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.f .tag{font-size:9px;font-weight:700;color:var(--success);letter-spacing:.04em;text-transform:uppercase;background:#DCFCE7;padding:0 5px;line-height:14px;border-radius:999px;flex-shrink:0}
 .input.ok{border-color:#86EFAC;background:#F0FDF4}
-.tbl.pick tbody tr{cursor:pointer;user-select:none}.tbl.pick tbody tr.on td{background:var(--primary-soft)}.tbl.pick input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);pointer-events:none}
-.item-calc{display:flex;flex-wrap:wrap;gap:3px 14px;font-size:11.5px;color:var(--muted);padding-top:1px;line-height:1.4}
-.item-calc b{color:var(--text-2);font-weight:600;font-variant-numeric:tabular-nums}
-.item-calc .warn{color:var(--warn)}
-.item-actions{display:flex;gap:2px;padding-bottom:2px}
-.field-mini>label{font-size:11px;color:var(--muted);font-weight:600}
 
 /* summary bar */
 .summary{background:var(--surface);border-top:1px solid var(--border);padding:10px 16px 11px;display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px 12px;box-shadow:0 -4px 16px rgba(15,23,42,.06);flex-shrink:0}
@@ -535,7 +545,7 @@ select.input{appearance:none;-webkit-appearance:none;padding-right:28px;backgrou
           <div class="card-b">
             <div class="notice" style="margin-bottom:12px">
               <svg class="ic"><use href="#i-info"/></svg>
-              <div>Nhập <b>Số lượng</b>, <b>Tổng tiền đã gồm thuế</b> (trước chiết khấu), <b>Chiết khấu đã gồm thuế</b> và <b>Thuế suất</b>. App tự tính ngược đơn giá chưa thuế, tiền thuế theo đúng cách làm tròn của M-Invoice.</div>
+              <div>Chọn hàng từ danh mục rồi gõ <b>Số lượng</b> — tổng tiền tự nhân theo đơn giá. <b>Đơn giá, Tổng tiền, Chiết khấu đều là số ĐÃ GỒM THUẾ</b>; app tự tính ngược đơn giá chưa thuế và tiền thuế đúng cách làm tròn của M-Invoice.</div>
             </div>
             <div id="items"></div>
           </div>
@@ -776,14 +786,29 @@ const recOf = {
   customer: r => ({ id: r.id, code: r.code, taxCode: r.tax_code || '', companyName: r.company_name || '', personName: r.person_name || '', address: r.address || '', idCard: r.id_card || '', passport: r.passport || '', budgetCode: r.budget_code || '', bankAccount: r.bank_account || '', updatedAt: Date.parse(r.updated_at) || Date.now() }),
   draft:    r => ({ id: r.id, createdAt: Date.parse(r.created_at) || Date.now(), updatedAt: Date.parse(r.updated_at) || Date.now(), data: r.data })
 };
-const persistProducts  = list => remote('hàng hóa',   () => sb.from('products').upsert(list.map(rowOf.product), { onConflict: 'id' }));
+// upsert theo lô (PostgREST giới hạn kích thước request; danh mục đối tượng có thể tới hàng chục nghìn dòng)
+const CHUNK = 500;
+async function upsertChunked(table, rows) {
+  for (let i = 0; i < rows.length; i += CHUNK) { const r = await sb.from(table).upsert(rows.slice(i, i + CHUNK), { onConflict: 'id' }); if (r.error) return r; }
+  return { error: null };
+}
+const persistProducts  = list => remote('hàng hóa',   () => upsertChunked('products', list.map(rowOf.product)));
 const removeProduct    = id   => remote('hàng hóa',   () => sb.from('products').delete().eq('id', id));
-const persistCustomers = list => remote('đối tượng',  () => sb.from('customers').upsert(list.map(rowOf.customer), { onConflict: 'id' }));
+const persistCustomers = list => remote('đối tượng',  () => upsertChunked('customers', list.map(rowOf.customer)));
 const removeCustomer   = id   => remote('đối tượng',  () => sb.from('customers').delete().eq('id', id));
-const persistDrafts    = list => remote('nháp',       () => sb.from('drafts').upsert(list.map(rowOf.draft), { onConflict: 'id' }));
+const persistDrafts    = list => remote('nháp',       () => upsertChunked('drafts', list.map(rowOf.draft)));
 const removeDraft      = id   => remote('nháp',       () => sb.from('drafts').delete().eq('id', id));
 async function replaceTable(table, rowsFn, list, label) {
-  return remote(label, async () => { const d = await sb.from(table).delete().not('id', 'is', null); if (d.error) return d; return sb.from(table).upsert(list.map(rowsFn), { onConflict: 'id' }); });
+  return remote(label, async () => { const d = await sb.from(table).delete().not('id', 'is', null); if (d.error) return d; return upsertChunked(table, list.map(rowsFn)); });
+}
+// đọc toàn bộ bảng theo trang 1000 dòng (PostgREST mặc định tối đa 1000 dòng / request)
+async function fetchAll(table, select, orderCol, desc = false) {
+  const out = []; const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const r = await sb.from(table).select(select).order(orderCol, { ascending: !desc }).range(from, from + PAGE - 1);
+    if (r.error) throw r.error; out.push(...r.data); if (r.data.length < PAGE) break;
+  }
+  return out;
 }
 /* =====================================================================
    CALCULATION
@@ -1077,36 +1102,33 @@ function updateCustomerPick() {
 
 function itemHTML(it, idx) {
   const c = calcItem(it);
+  const auto = it.autoGross && +it.unitGross > 0;
   return `
   <div class="item" data-id="${it.id}" draggable="false">
     <div class="item-side">
-      <span class="item-grip" title="Kéo để sắp xếp" draggable="true">${icon('grip', 'ic ic-sm')}</span>
       <span class="item-idx">${idx}</span>
+      <span class="item-grip" title="Kéo để sắp xếp" draggable="true">${icon('grip', 'ic ic-sm')}</span>
     </div>
     <div class="item-main">
-      <div class="item-r1">
-        <div class="field field-mini"><label>Mã hàng</label><input class="input code" data-item="${it.id}" data-field="code" value="${esc(it.code || '')}" placeholder="Mã" autocomplete="off" spellcheck="false"></div>
-        <div class="field field-mini"><label>Tên hàng hóa, dịch vụ</label><input class="input" data-item="${it.id}" data-field="name" value="${esc(it.name)}" placeholder="Gõ tên để chọn từ danh mục…" autocomplete="off"></div>
-        <div class="field field-mini"><label>ĐVT</label><input class="input" data-item="${it.id}" data-field="unit" value="${esc(it.unit)}" list="units" placeholder="Cái" autocomplete="off"></div>
-        <div class="item-actions">
-          <button class="btn btn-ghost btn-icon btn-sm" data-act="dup" title="Nhân bản dòng" tabindex="-1">${icon('copy', 'ic ic-sm')}</button>
-          <button class="btn btn-ghost btn-icon btn-sm btn-danger" data-act="del" title="Xóa dòng" tabindex="-1">${icon('trash', 'ic ic-sm')}</button>
-        </div>
-      </div>
-      <div class="item-r2">
-        <div class="field field-mini"><label>Số lượng</label><input class="input num" data-item="${it.id}" data-field="qty" value="${fmtNum(it.qty)}" inputmode="decimal"></div>
-        <div class="field field-mini"><label>Đơn giá gồm thuế</label><input class="input num" data-item="${it.id}" data-field="unitGross" value="${it.unitGross ? fmtNum(it.unitGross) : ''}" placeholder="0" inputmode="decimal" title="Đơn giá đã gồm thuế cho 1 đơn vị (từ danh mục). Tổng tiền = đơn giá × SL"></div>
-        <div class="field field-mini"><label>Tổng tiền gồm thuế${it.autoGross ? ' <span class="auto" title="Đang tự tính = đơn giá × SL">tự tính</span>' : ''}</label><input class="input num" data-item="${it.id}" data-field="gross" value="${it.gross ? fmtNum(it.gross) : ''}" placeholder="0" inputmode="decimal"></div>
-        <div class="field field-mini"><label>Chiết khấu gồm thuế</label><input class="input num" data-item="${it.id}" data-field="discount" value="${it.discount ? fmtNum(it.discount) : ''}" placeholder="0" inputmode="decimal"></div>
-        <div class="field field-mini"><label>Thuế</label><select class="input" data-item="${it.id}" data-field="rate">${RATES.map(r => `<option value="${r.v}"${it.rate === r.v ? ' selected' : ''}>${r.label}</option>`).join('')}</select></div>
-      </div>
-      <div class="item-calc" id="calc-${it.id}">${itemCalcHTML(c)}</div>
+      <div class="f c3"><label>Mã hàng</label><input class="input code" data-item="${it.id}" data-field="code" value="${esc(it.code || '')}" placeholder="Mã" autocomplete="off" spellcheck="false"></div>
+      <div class="f c7"><label>Tên hàng hóa, dịch vụ</label><input class="input" data-item="${it.id}" data-field="name" value="${esc(it.name)}" placeholder="Gõ tên hoặc mã để chọn từ danh mục…" autocomplete="off"></div>
+      <div class="f c2"><label>ĐVT</label><input class="input" data-item="${it.id}" data-field="unit" value="${esc(it.unit)}" list="units" placeholder="Cái" autocomplete="off"></div>
+      <div class="f c2"><label>Số lượng</label><input class="input num" data-item="${it.id}" data-field="qty" value="${fmtNum(it.qty)}" inputmode="decimal"></div>
+      <div class="f c3"><label>Đơn giá</label><input class="input num" data-item="${it.id}" data-field="unitGross" value="${it.unitGross ? fmtNum(it.unitGross) : ''}" placeholder="0" inputmode="decimal" title="Đơn giá đã gồm thuế cho 1 đơn vị — tổng tiền = đơn giá × SL"></div>
+      <div class="f c3 has-tag"><label><span>Tổng tiền</span>${auto ? '<span class="tag">tự tính</span>' : ''}</label><input class="input num${auto ? ' is-auto' : ''}" data-item="${it.id}" data-field="gross" value="${it.gross ? fmtNum(it.gross) : ''}" placeholder="0" inputmode="decimal" title="Đang tự tính = đơn giá × SL; gõ vào để tự nhập"></div>
+      <div class="f c2"><label>Chiết khấu</label><input class="input num" data-item="${it.id}" data-field="discount" value="${it.discount ? fmtNum(it.discount) : ''}" placeholder="0" inputmode="decimal" title="Chiết khấu đã gồm thuế"></div>
+      <div class="f c2"><label>Thuế</label><select class="input" data-item="${it.id}" data-field="rate">${RATES.map(r => `<option value="${r.v}"${it.rate === r.v ? ' selected' : ''}>${r.label}</option>`).join('')}</select></div>
+      <div class="calc" id="calc-${it.id}">${itemCalcHTML(c)}</div>
+    </div>
+    <div class="item-acts">
+      <button class="btn btn-ghost btn-icon btn-sm" data-act="dup" title="Nhân bản dòng" tabindex="-1">${icon('copy', 'ic ic-sm')}</button>
+      <button class="btn btn-ghost btn-icon btn-sm btn-danger" data-act="del" title="Xóa dòng" tabindex="-1">${icon('trash', 'ic ic-sm')}</button>
     </div>
   </div>`;
 }
 function itemCalcHTML(c) {
   const bad = c.disc > c.gross;
-  return `<span>Đơn giá chưa thuế <b>${fmtNum(c.unit)}</b></span><span>CK chưa thuế <b>${fmtInt(c.discExcl)}</b></span><span>Chưa thuế <b>${fmtInt(c.excl)}</b></span><span>Tiền thuế <b>${fmtInt(c.tax)}</b></span><span>Có thuế <b>${fmtInt(c.net)}</b></span>${bad ? '<span class="warn">Chiết khấu vượt tổng tiền</span>' : ''}`;
+  return `${bad ? '<span class="warn">Chiết khấu vượt tổng tiền</span>' : ''}<span>Đơn giá chưa thuế<b>${fmtNum(c.unit)}</b></span><span>Chưa thuế<b>${fmtInt(c.excl)}</b></span><span>Thuế<b>${fmtInt(c.tax)}</b></span><span>Có thuế<b>${fmtInt(c.net)}</b></span>`;
 }
 function renderItems() {
   const host = $('#items');
@@ -1176,7 +1198,7 @@ editor.addEventListener('input', e => {
     const it = inv.items.find(x => x.id === el.dataset.item); if (!it) return;
     const f = el.dataset.field, row = el.closest('.item');
     it[f] = ['qty', 'gross', 'discount', 'unitGross'].includes(f) ? parseNum(el.value) : el.value;
-    if (f === 'gross') { it.autoGross = false; const lb = $('.auto', row); if (lb) lb.remove(); }
+    if (f === 'gross') { it.autoGross = false; refreshAutoLabel(it, row); }
     if (f === 'unitGross') { it.autoGross = true; recalcGross(it, row); refreshAutoLabel(it, row); }
     if (f === 'qty') recalcGross(it, row);
     if (f === 'name') showCatalogSuggest(el, it);
@@ -1187,9 +1209,10 @@ editor.addEventListener('input', e => {
 });
 function refreshAutoLabel(it, row) {
   const g = $('[data-field="gross"]', row); if (!g) return;
-  const label = g.closest('.field').querySelector('label'); let tag = $('.auto', label);
-  if (it.autoGross && !tag) label.insertAdjacentHTML('beforeend', ' <span class="auto" title="Đang tự tính = đơn giá × SL">tự tính</span>');
-  if (!it.autoGross && tag) tag.remove();
+  const auto = it.autoGross && +it.unitGross > 0, f = g.closest('.f'); let tag = $('.tag', f);
+  g.classList.toggle('is-auto', auto);
+  if (auto && !tag) $('label', f).insertAdjacentHTML('beforeend', '<span class="tag">tự tính</span>');
+  if (!auto && tag) tag.remove();
 }
 editor.addEventListener('focusout', e => {
   const el = e.target;
@@ -1443,21 +1466,48 @@ function openDrafts() {
 function splitTable(text) {
   const lines = text.replace(/\r/g, '').split('\n').map(l => l.replace(/\s+$/, '')).filter(l => l.trim());
   if (!lines.length) return [];
-  const delim = lines.some(l => l.includes('\t')) ? '\t' : (lines.some(l => l.includes(';')) ? ';' : (lines.some(l => l.includes('|')) ? '|' : /\s{2,}/));
-  let rows = lines.map(l => l.split(delim).map(c => c.trim()));
+  const delim = lines.some(l => l.includes('\t')) ? '\t' : (lines.some(l => l.includes(';')) ? ';' : (lines.some(l => l.includes('|')) ? '|' : (lines.some(l => l.includes(',')) ? ',' : /\s{2,}/)));
+  // tách 1 dòng CSV có hỗ trợ dấu ngoặc kép ("a, b" giữ nguyên dấu phẩy)
+  const splitLine = l => {
+    if (delim instanceof RegExp) return l.split(delim);
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < l.length; i++) { const ch = l[i]; if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; } else if (ch === delim && !q) { out.push(cur); cur = ''; } else cur += ch; }
+    out.push(cur); return out;
+  };
+  let rows = lines.map(l => splitLine(l).map(c => c.trim()));
   const width = Math.max(...rows.map(r => r.length));
   return rows.map(r => { while (r.length < width) r.push(''); return r; });
 }
 // spec: [{ v:'field', l:'Nhãn', rx:/header regex/ }]  — header row auto-detected, else positional order
+// SheetJS (đọc .xls/.xlsx) chỉ tải khi cần
+let _xlsxLoading = null;
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (_xlsxLoading) return _xlsxLoading;
+  _xlsxLoading = new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; s.onload = () => res(window.XLSX); s.onerror = () => { _xlsxLoading = null; rej(new Error('Không tải được thư viện đọc Excel (cần internet)')); }; document.head.appendChild(s); });
+  return _xlsxLoading;
+}
+async function readExcelFile(file) {
+  if (/\.(csv|txt|tsv)$/i.test(file.name)) {           // file văn bản: đọc UTF-8 trực tiếp, không cần SheetJS
+    const text = new TextDecoder('utf-8').decode(await file.arrayBuffer()).replace(/^\uFEFF/, '');
+    return splitTable(text);
+  }
+  const XLSX = await loadXLSX();
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false, codepage: 65001 });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+  return aoa.filter(r => r.some(c => String(c).trim() !== '')).map(r => r.map(c => String(c ?? '').trim()));
+}
 function openPasteImport({ title, spec, sample, onImport }) {
   const m = openModal({ title, icon: 'paste', size: 'lg', body: `
-    <div class="notice">${icon('info')}<div>Copy từ Excel (chọn vùng → Ctrl+C) rồi dán vào ô dưới. Có dòng tiêu đề thì app tự nhận cột; không có thì theo thứ tự: <b>${esc(sample)}</b>. Bạn có thể chỉnh lại ở phần <b>Gán cột</b>.</div></div>
-    <textarea class="input paste-area" id="pi-text" placeholder="Dán dữ liệu vào đây (Ctrl+V)…"></textarea>
+    <div class="notice">${icon('info')}<div><b>Cách 1:</b> bấm <b>Chọn file Excel</b> (.xls / .xlsx, đúng template: <b>${esc(sample)}</b>, dòng đầu là tiêu đề, lấy sheet đầu tiên). <b>Cách 2:</b> copy vùng dữ liệu trong Excel → dán vào ô dưới. App tự nhận cột theo tiêu đề; chỉnh lại ở <b>Gán cột</b> nếu cần.</div></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="btn btn-primary" id="pi-file-btn">${icon('upload', 'ic ic-sm')}Chọn file Excel…</button><input type="file" id="pi-file" class="hidden" accept=".xls,.xlsx,.xlsm,.csv"><span class="hint" id="pi-file-name">Chưa chọn file</span></div>
+    <textarea class="input paste-area" id="pi-text" placeholder="…hoặc dán dữ liệu vào đây (Ctrl+V)"></textarea>
     <div id="pi-result" style="margin-top:12px"></div>`, footer: `<label class="check"><input type="checkbox" id="pi-replace"> Thay thế toàn bộ danh mục hiện có</label><span class="spacer"></span><button class="btn" data-close>Hủy</button><button class="btn btn-primary" id="pi-ok" disabled>${icon('check', 'ic ic-sm')}Nhập</button>` });
   const fields = [{ v: '', l: '— Bỏ qua —' }, ...spec];
   let rows = [], map = [], hasHeader = false, header = null;
-  const parse = text => {
-    const all = splitTable(text); rows = []; map = []; hasHeader = false; header = null;
+  const parseRows = all => {
+    rows = []; map = []; hasHeader = false; header = null;
     if (!all.length) return;
     const first = all[0];
     hasHeader = first.filter(c => c && !/^[\d.,\s%-]+$/.test(c)).length >= 2 && first.some(c => spec.some(s => s.rx.test(c)));
@@ -1465,6 +1515,7 @@ function openPasteImport({ title, spec, sample, onImport }) {
     if (hasHeader) { header = first; first.forEach((c, i) => { const s = spec.find(s => s.rx.test(c) && !map.includes(s.v)); if (s) map[i] = s.v; }); rows = all.slice(1); }
     else { spec.forEach((s, i) => { if (i < map.length) map[i] = s.v; }); rows = all; }
   };
+  const parse = text => parseRows(splitTable(text));
   const render = () => {
     const box = $('#pi-result', m.body), ok = $('#pi-ok', m.foot);
     if (!rows.length) { box.innerHTML = ''; ok.disabled = true; return; }
@@ -1477,10 +1528,18 @@ function openPasteImport({ title, spec, sample, onImport }) {
   const required = spec.filter(s => s.req).map(s => s.v);
   const check = () => { const ok = $('#pi-ok', m.foot); const miss = required.filter(r => !map.includes(r)); ok.disabled = !!miss.length; ok.title = miss.length ? 'Cần gán cột: ' + miss.map(v => spec.find(s => s.v === v).l).join(', ') : ''; };
   $('#pi-text', m.body).oninput = e => { parse(e.target.value); render(); };
-  $('#pi-ok', m.foot).onclick = () => {
+  $('#pi-file-btn', m.body).onclick = () => $('#pi-file', m.body).click();
+  $('#pi-file', m.body).onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    $('#pi-file-name', m.body).textContent = 'Đang đọc ' + f.name + '…';
+    try { const all = await readExcelFile(f); parseRows(all); render(); $('#pi-file-name', m.body).textContent = `${f.name} — ${rows.length} dòng dữ liệu`; $('#pi-text', m.body).value = ''; }
+    catch (err) { $('#pi-file-name', m.body).textContent = 'Không đọc được file'; toast(err.message || 'Không đọc được file Excel', 'err'); }
+  };
+  $('#pi-ok', m.foot).onclick = async () => {
     const recs = rows.map(r => { const o = {}; map.forEach((f, i) => { if (f) o[f] = r[i]; }); return o; });
-    const n = onImport(recs, $('#pi-replace', m.foot).checked);
-    m.close(); toast(`Đã nhập ${n} dòng vào danh mục`);
+    const ok = $('#pi-ok', m.foot); ok.disabled = true; ok.textContent = 'Đang nhập…';
+    try { const n = await onImport(recs, $('#pi-replace', m.foot).checked); m.close(); toast(`Đã nhập ${n} dòng vào danh mục`); }
+    catch (err) { ok.disabled = false; ok.textContent = 'Nhập'; toast('Lỗi nhập: ' + (err.message || err), 'err'); }
   };
 }
 
@@ -1489,23 +1548,23 @@ function openPasteImport({ title, spec, sample, onImport }) {
    ===================================================================== */
 const catalogFooterHint = t => `<span class="hint">${t}</span><span class="spacer"></span><button class="btn" data-close>Đóng</button>`;
 const PRODUCT_SPEC = [
-  { v: 'code', l: 'Mã hàng', rx: /^(mã|mã hàng|mã sp|mã sản phẩm|mã hh|code|sku|item ?code)$/i, req: true },
+  { v: 'code', l: 'Mã hàng', rx: /^(mã( hàng( hóa| hoá)?| sp| sản phẩm| hh)?|code|sku|item ?code)$/i, req: true },
   { v: 'name', l: 'Tên hàng', rx: /tên|name|hàng hóa|dịch vụ|sản phẩm|diễn giải/i, req: true },
   { v: 'unit', l: 'ĐVT', rx: /đvt|đơn vị|unit/i },
   { v: 'rate', l: 'Thuế suất', rx: /thuế|vat|rate/i },
   { v: 'price', l: 'Đơn giá (gồm VAT)', rx: /giá|price|đơn giá|tiền/i }
 ];
-function upsertProductsLocal(recs, replace) {
+async function upsertProductsLocal(recs, replace) {
   if (replace) catalog = [];
-  const touched = [];
+  const touched = [], byCode = new Map(catalog.map(c => [norm(c.code), c]));
   recs.forEach(r => {
     const code = norm(r.code), name = (r.name || '').trim(); if (!code || !name) return;
     const rec = { code, name, unit: (r.unit || '').trim(), rate: r.rate != null && r.rate !== '' ? normRate(r.rate) : '8', price: parseNum(r.price) };
-    const ex = catalog.find(c => norm(c.code) === code);
-    if (ex) { Object.assign(ex, rec); touched.push(ex); } else { const n = Object.assign({ id: uid() }, rec); catalog.push(n); touched.push(n); }
+    const ex = byCode.get(code);
+    if (ex) { Object.assign(ex, rec); touched.push(ex); } else { const n = Object.assign({ id: uid() }, rec); catalog.push(n); byCode.set(code, n); touched.push(n); }
   });
   saveCatalog();
-  if (replace) replaceTable('products', rowOf.product, catalog, 'hàng hóa'); else if (touched.length) persistProducts(touched);
+  if (replace) await replaceTable('products', rowOf.product, catalog, 'hàng hóa'); else if (touched.length) await persistProducts(touched);
   return touched.length;
 }
 function openCatalog() {
@@ -1533,7 +1592,7 @@ function openCatalog() {
       editing = null; saveCatalog(); persistProducts([saved]); render(q); toast('Đã lưu danh mục hàng hóa');
     };
     const cc = $('#c-cancel', m.body); if (cc) cc.onclick = () => { editing = null; render(q); };
-    $('#c-import', m.body).onclick = () => openPasteImport({ title: 'Nhập danh mục hàng hóa từ Excel', sample: 'Mã hàng | Tên hàng | ĐVT | Thuế suất | Đơn giá gồm VAT', spec: PRODUCT_SPEC, onImport: (recs, replace) => { const n = upsertProductsLocal(recs, replace); render(q); return n; } });
+    $('#c-import', m.body).onclick = () => openPasteImport({ title: 'Nhập danh mục hàng hóa từ Excel', sample: 'Mã hàng | Tên hàng | ĐVT | Thuế suất | Đơn giá gồm VAT', spec: PRODUCT_SPEC, onImport: async (recs, replace) => { const n = await upsertProductsLocal(recs, replace); render(q); return n; } });
     m.body.onclick = async e => {
       const b = e.target.closest('button[data-a]'); if (!b) return; const id = b.closest('tr').dataset.id;
       if (b.dataset.a === 'edit') { editing = catalog.find(x => x.id === id); render(q); $('#c-code', m.body).focus(); m.body.scrollTop = 0; }
@@ -1581,17 +1640,17 @@ const CUSTOMER_SPEC = [
   { v: 'idCard', l: 'CCCD', rx: /cccd|cmnd|căn cước|identity/i },
   { v: 'bankAccount', l: 'Số tài khoản', rx: /tài khoản|stk|account/i }
 ];
-function upsertCustomersLocal(recs, replace) {
+async function upsertCustomersLocal(recs, replace) {
   if (replace) customers = [];
-  const touched = [];
+  const touched = [], byCode = new Map(customers.map(c => [norm(c.code), c]));   // tra cứu O(1) — danh mục có thể tới hàng chục nghìn dòng
   recs.forEach(r => {
     const code = norm(r.code), companyName = (r.companyName || '').trim(); if (!code || !companyName) return;
     const rec = { code, companyName, taxCode: (r.taxCode || '').trim(), address: (r.address || '').trim(), personName: (r.personName || '').trim(), idCard: (r.idCard || '').trim(), bankAccount: (r.bankAccount || '').trim(), updatedAt: Date.now() };
-    const ex = customers.find(c => norm(c.code) === code);
-    if (ex) { Object.assign(ex, rec); touched.push(ex); } else { const n = Object.assign({ id: uid() }, rec); customers.push(n); touched.push(n); }
+    const ex = byCode.get(code);
+    if (ex) { Object.assign(ex, rec); touched.push(ex); } else { const n = Object.assign({ id: uid() }, rec); customers.push(n); byCode.set(code, n); touched.push(n); }
   });
   saveCustomers();
-  if (replace) replaceTable('customers', rowOf.customer, customers, 'đối tượng'); else if (touched.length) persistCustomers(touched);
+  if (replace) await replaceTable('customers', rowOf.customer, customers, 'đối tượng'); else if (touched.length) await persistCustomers(touched);
   return touched.length;
 }
 const customerFormHTML = (f, title, saveLabel) => `<div class="form-panel"><h4>${title}</h4>
@@ -1624,13 +1683,14 @@ function openCustomers() {
   const m = openModal({ title: 'Danh mục đối tượng (khách hàng)', icon: 'users', size: 'lg', body: '<div></div>', footer: catalogFooterHint('Trên hóa đơn: gõ tên/mã/MST vào ô <b>Chọn đối tượng</b> → app tự điền toàn bộ bên mua.') });
   let editing = null, adding = false;
   const render = (q = '') => {
-    const list = searchCustomers(q, 100000);
+    const all = searchCustomers(q, 100000), list = all.slice(0, 300), more = all.length - list.length;
     const f = editing || (adding ? { code: nextCustomerCode() } : null);
     m.body.innerHTML = `
       ${f ? customerFormHTML(f, editing ? 'Sửa đối tượng' : 'Thêm đối tượng mới', editing ? 'Cập nhật' : 'Thêm') : ''}
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><div class="searchbar" style="flex:1;margin:0">${icon('search', 'ic ic-sm')}<input class="input" placeholder="Tìm theo tên, mã đối tượng, MST…" value="${esc(q)}"></div><span class="chip">${customers.length} đối tượng</span>${f ? '' : `<button class="btn" id="k-import">${icon('paste', 'ic ic-sm')}Nhập từ Excel</button><button class="btn btn-primary" id="k-new">${icon('plus', 'ic ic-sm')}Thêm đối tượng</button>`}</div>
       ${list.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Mã</th><th>Tên đối tượng</th><th>MST</th><th>Địa chỉ</th><th></th></tr></thead><tbody>
       ${list.map(c => `<tr data-id="${c.id}"><td><b class="mono">${esc(c.code || '—')}</b></td><td>${esc(c.companyName || '')}${c.personName ? `<br><small style="color:var(--muted)">${esc(c.personName)}</small>` : ''}</td><td class="mono">${esc(c.taxCode || '—')}</td><td><small>${esc(c.address || '')}</small></td><td class="acts"><button class="btn btn-xs btn-primary" data-a="use">Dùng</button><button class="btn btn-xs" data-a="edit" title="Sửa">${icon('pencil', 'ic ic-xs')}</button><button class="btn btn-xs btn-danger" data-a="del" title="Xóa">${icon('trash', 'ic ic-xs')}</button></td></tr>`).join('')}
+      ${more > 0 ? `<tr><td colspan="5" style="color:var(--muted)">… còn ${more} đối tượng nữa — gõ vào ô tìm để thu hẹp</td></tr>` : ''}
       </tbody></table></div>` : `<div class="empty-note">${q ? 'Không tìm thấy.' : 'Danh mục đối tượng trống — thêm ở trên hoặc bấm <b>Nhập từ Excel</b>.'}</div>`}`;
     $('.searchbar input', m.body).oninput = e => { const v = e.target.value; render(v); const i = $('.searchbar input', m.body); i.focus(); i.setSelectionRange(v.length, v.length); };
     if (f) {
@@ -1642,7 +1702,7 @@ function openCustomers() {
       $('#k-cancel', m.body).onclick = () => { editing = null; adding = false; render(q); };
     } else {
       $('#k-new', m.body).onclick = () => { adding = true; render(q); $('#k-company', m.body).focus(); };
-      $('#k-import', m.body).onclick = () => openPasteImport({ title: 'Nhập danh mục đối tượng từ Excel', sample: 'Mã đối tượng | Tên đối tượng | MST | Địa chỉ | Tên người mua', spec: CUSTOMER_SPEC, onImport: (recs, replace) => { const n = upsertCustomersLocal(recs, replace); render(q); return n; } });
+      $('#k-import', m.body).onclick = () => openPasteImport({ title: 'Nhập danh mục đối tượng từ Excel', sample: 'Mã đối tượng | Tên đối tượng | MST | Địa chỉ | Tên người mua', spec: CUSTOMER_SPEC, onImport: async (recs, replace) => { const n = await upsertCustomersLocal(recs, replace); render(q); return n; } });
     }
     m.body.onclick = async e => {
       const b = e.target.closest('button[data-a]'); if (!b) return; const id = b.closest('tr').dataset.id; const c = customers.find(x => x.id === id);
@@ -1663,8 +1723,15 @@ const FIELDS = [{ v: '', l: '— Bỏ qua —' }, { v: 'code', l: 'Mã hàng' },
 function parseTable(text) {
   const lines = text.replace(/\r/g, '').split('\n').map(l => l.replace(/\s+$/, '')).filter(l => l.trim());
   if (!lines.length) return { rows: [], hasHeader: false };
-  const delim = lines.some(l => l.includes('\t')) ? '\t' : (lines.some(l => l.includes(';')) ? ';' : (lines.some(l => l.includes('|')) ? '|' : /\s{2,}/));
-  let rows = lines.map(l => l.split(delim).map(c => c.trim()));
+  const delim = lines.some(l => l.includes('\t')) ? '\t' : (lines.some(l => l.includes(';')) ? ';' : (lines.some(l => l.includes('|')) ? '|' : (lines.some(l => l.includes(',')) ? ',' : /\s{2,}/)));
+  // tách 1 dòng CSV có hỗ trợ dấu ngoặc kép ("a, b" giữ nguyên dấu phẩy)
+  const splitLine = l => {
+    if (delim instanceof RegExp) return l.split(delim);
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < l.length; i++) { const ch = l[i]; if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; } else if (ch === delim && !q) { out.push(cur); cur = ''; } else cur += ch; }
+    out.push(cur); return out;
+  };
+  let rows = lines.map(l => splitLine(l).map(c => c.trim()));
   const width = Math.max(...rows.map(r => r.length)); rows = rows.map(r => { while (r.length < width) r.push(''); return r; });
   const H = { code: /^(mã( hàng| sp| sản phẩm)?|code|sku|item ?code)$/i, name: /tên|hàng|dịch vụ|description|sản phẩm|nội dung/i, unit: /đvt|đơn vị|unit/i, qty: /số lượng|^sl$|q\.?tity|qty|quantity/i, gross: /thành tiền|tổng|total|amount|có thuế|sau thuế/i, discount: /chiết khấu|ck|discount|giảm/i, rate: /thuế suất|vat|thuế/i };
   const first = rows[0];
@@ -1735,9 +1802,9 @@ $('#file-import').addEventListener('change', async e => {
     if (!(await confirmDlg({ title: 'Khôi phục dữ liệu?', message: `File chứa <b>${(j.drafts || []).length}</b> nháp (${nd} mới), <b>${(j.catalog || []).length}</b> mặt hàng, <b>${(j.customers || []).length}</b> đối tượng. Dữ liệu sẽ được <b>gộp</b> vào dữ liệu hiện có (không xóa gì)${cloud() ? ' và đồng bộ lên Supabase' : ''}.`, okText: 'Khôi phục', icon: 'upload' }))) return;
     const newDrafts = (j.drafts || []).filter(d => d && d.data && !drafts.some(x => x.id === d.id)).map(d => Object.assign({}, d, { id: /^[0-9a-f-]{36}$/i.test(d.id || '') ? d.id : uid() }));
     drafts.push(...newDrafts);
-    const nP = upsertProductsLocal(j.catalog || [], false);
+    const nP = await upsertProductsLocal(j.catalog || [], false);
     _tmpCodeSeq = 0;
-    const nC = upsertCustomersLocal((j.customers || []).map(c => Object.assign({}, c, { code: c.code || nextCustomerCodeFor(c) })), false);
+    const nC = await upsertCustomersLocal((j.customers || []).map(c => Object.assign({}, c, { code: c.code || nextCustomerCodeFor(c) })), false);
     if (j.settings) { settings = Object.assign({}, DEFAULT_SETTINGS, settings, j.settings); saveSettings(); $('#f-serial').value = settings.serial; }
     drafts.sort((a, b) => b.updatedAt - a.updatedAt); saveDrafts(); if (newDrafts.length) persistDrafts(newDrafts);
     renderPreview(); toast(`Đã khôi phục: ${newDrafts.length} nháp, ${nP} mặt hàng, ${nC} đối tượng`);
@@ -1860,12 +1927,11 @@ async function syncFromCloud(quiet) {
   if (!cloud()) return false;
   try {
     const [p, c, d] = await Promise.all([
-      sb.from('products').select('*').order('code'),
-      sb.from('customers').select('*').order('code'),
-      sb.from('drafts').select('id,contract_code,customer_name,total,data,created_at,updated_at').order('updated_at', { ascending: false })
+      fetchAll('products', '*', 'code'),
+      fetchAll('customers', '*', 'code'),
+      fetchAll('drafts', 'id,contract_code,customer_name,total,data,created_at,updated_at', 'updated_at', true)
     ]);
-    for (const r of [p, c, d]) if (r.error) throw r.error;
-    catalog = p.data.map(recOf.product); customers = c.data.map(recOf.customer); drafts = d.data.map(recOf.draft);
+    catalog = p.map(recOf.product); customers = c.map(recOf.customer); drafts = d.map(recOf.draft);
     saveCatalog(); saveCustomers(); saveDrafts(); updateCustomerPick();
     setCloudChip('ok', 'Đã đồng bộ · ' + (me.display_name || me.username));
     if (!quiet) toast('Đã tải lại dữ liệu từ Supabase');
